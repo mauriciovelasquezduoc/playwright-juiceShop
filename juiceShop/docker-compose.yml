@@ -1,0 +1,42 @@
+# =============================================================================
+#  Laboratorio 2.3.2 - ISY1102
+#  Orquesta el SUT (OWASP Juice Shop) para la actividad en sala.
+#
+#  Uso:
+#    docker compose up -d --build     # construir y levantar en segundo plano
+#    docker compose ps                # ver estado y salud
+#    docker compose logs -f           # ver logs
+#    docker compose down              # detener y eliminar
+#    docker compose down -v           # detener y borrar volúmenes
+#
+#  Luego abrir en el navegador:  http://localhost:3000
+# =============================================================================
+
+name: isy1102-lab232
+
+services:
+  juice-shop:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: isy1102/juice-shop-lab:2.3.2
+    container_name: isy1102-juice-shop
+
+    # Mapea 3000 del contenedor al 3000 de tu equipo.
+    # Si el 3000 está ocupado, cambia la izquierda: "3001:3000".
+    ports:
+      - "3000:3000"
+
+    environment:
+      NODE_ENV: production
+
+    # Healthcheck equivalente al del Dockerfile (visible en "docker compose ps").
+    # Forma exec con el binario de Node porque la imagen no trae shell ni wget.
+    healthcheck:
+      test: ["CMD", "/nodejs/bin/node", "-e", "require('http').get('http://127.0.0.1:3000/',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+    restart: unless-stopped

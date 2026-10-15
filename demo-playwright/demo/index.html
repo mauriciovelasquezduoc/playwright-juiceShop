@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Demo Playwright - Portal de prueba</title>
+  <style>
+    :root {
+      --azul: #1f6feb;
+      --verde: #1a7f37;
+      --rojo: #cf222e;
+      --gris: #f6f8fa;
+      --borde: #d0d7de;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--gris);
+      color: #1f2328;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    main {
+      background: #fff;
+      border: 1px solid var(--borde);
+      border-radius: 12px;
+      padding: 32px;
+      width: 360px;
+      box-shadow: 0 8px 24px rgba(140, 149, 159, 0.2);
+    }
+    h1 { font-size: 20px; margin: 0 0 4px; }
+    p.sub { margin: 0 0 24px; font-size: 13px; color: #57606a; }
+    label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+    input {
+      width: 100%;
+      padding: 8px 10px;
+      margin-bottom: 16px;
+      border: 1px solid var(--borde);
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    input:focus { outline: 2px solid var(--azul); outline-offset: 0; border-color: var(--azul); }
+    button {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    #btn-ingresar { background: var(--azul); color: #fff; margin-bottom: 8px; }
+    #btn-ingresar:hover { background: #1a5fd0; }
+    #btn-limpiar { background: #fff; color: #1f2328; border: 1px solid var(--borde); }
+    #btn-limpiar:hover { background: var(--gris); }
+    #resultado {
+      margin-top: 18px;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 14px;
+      text-align: center;
+      min-height: 18px;
+    }
+    #resultado.exito { background: #dafbe1; color: var(--verde); border: 1px solid #aceebb; }
+    #resultado.error { background: #ffebe9; color: var(--rojo); border: 1px solid #ffcecb; }
+    .tip { margin-top: 18px; font-size: 12px; color: #57606a; text-align: center; }
+    code { background: var(--gris); padding: 2px 4px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Portal de Demostracion</h1>
+    <p class="sub">Pagina local, controlada y sin dependencias externas.</p>
+
+    <form id="form-login" autocomplete="off">
+      <label for="usuario">Usuario</label>
+      <input id="usuario" name="usuario" type="text" placeholder="admin" />
+
+      <label for="password">Contrasena</label>
+      <input id="password" name="password" type="password" placeholder="admin123" />
+
+      <button id="btn-ingresar" type="submit">Ingresar</button>
+      <button id="btn-limpiar" type="button">Limpiar</button>
+    </form>
+
+    <p id="resultado" role="status" aria-live="polite"></p>
+
+    <p class="tip">
+      Usuario valido: <code>admin</code> / <code>admin123</code>
+    </p>
+  </main>
+
+  <script>
+    // -----------------------------------------------------------------
+    // Logica de negocio de la pagina de demostracion (MUY simple).
+    // Credenciales validas: admin / admin123
+    // -----------------------------------------------------------------
+    const USUARIO_VALIDO = 'admin';
+    const PASSWORD_VALIDA = 'admin123';
+
+    const form = document.getElementById('form-login');
+    const campoUsuario = document.getElementById('usuario');
+    const campoPassword = document.getElementById('password');
+    const resultado = document.getElementById('resultado');
+    const btnLimpiar = document.getElementById('btn-limpiar');
+
+    form.addEventListener('submit', (evento) => {
+      evento.preventDefault();
+
+      const usuario = campoUsuario.value.trim();
+      const password = campoPassword.value.trim();
+
+      if (usuario === USUARIO_VALIDO && password === PASSWORD_VALIDA) {
+        resultado.textContent = 'Login exitoso';
+        resultado.className = 'exito';
+      } else {
+        resultado.textContent = 'Credenciales invalidas';
+        resultado.className = 'error';
+      }
+    });
+
+    btnLimpiar.addEventListener('click', () => {
+      campoUsuario.value = '';
+      campoPassword.value = '';
+      resultado.textContent = '';
+      resultado.className = '';
+      campoUsuario.focus();
+    });
+  </script>
+</body>
+</html>

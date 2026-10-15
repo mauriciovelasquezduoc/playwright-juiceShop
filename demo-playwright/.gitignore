@@ -1,0 +1,7 @@
+# Evidencias y reportes generados (no versionar)
+*.png
+playwright-report/
+test-results/
+node_modules/
+resultados/grabacion-cruda.js
+resultados/grabacion.json
