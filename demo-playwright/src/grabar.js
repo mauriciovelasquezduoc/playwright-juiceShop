@@ -61,10 +61,16 @@ async function main() {
   let esperado = leerArgumento('esperado', '');
 
   // Si la URL es local, levantamos el servidor de la pagina demo.
+  // Si el puerto ya esta ocupado (p.ej. Juice Shop en el 3000), el servidor
+  // se reutiliza y la grabacion se hace directamente contra esa aplicacion.
   let proceso = null;
   if (/localhost|127\.0\.0\.1/.test(url)) {
     proceso = await servidor.iniciar();
-    console.log(`> Pagina demo servida en ${url}`);
+    console.log(
+      proceso
+        ? `> Pagina demo servida en ${url}`
+        : `> ${url} ya responde: se reutiliza ese servidor (no se levanta la demo)`
+    );
   }
 
   console.log('');

@@ -100,7 +100,7 @@ async function iniciarSesion(page, email, contrasena) {
 async function abrirMenuCuenta(page, email) {
   await page.getByRole('button', { name: 'Show/hide account menu' }).click();
   await page.waitForTimeout(1200);
-  await expect(page.getByText(email).and(page.locator(':visible'))).toBeVisible();
+  await expect(page.getByText(email).and(page.locator(':visible'))).toBeVisible({ timeout: 10000 });
 }
 
 // Helper: decodifica el payload del JWT guardado en localStorage
@@ -122,6 +122,7 @@ fs.mkdirSync(RESULTADOS, { recursive: true });
 test.describe('Juice Shop: errores tipicos de seguridad', () => {
   // ------------------------------------------------------------------ 01 ---
   test('01 - Credenciales por defecto del administrador (admin123)', async ({ page }) => {
+    test.setTimeout(60000); // arranque frio del primer navegador: puede demorar
     await test.step('Abrir la pagina de login', async () => {
       await prepararPagina(page, '/#/login');
       paso('Pagina de login abierta');
@@ -146,10 +147,11 @@ test.describe('Juice Shop: errores tipicos de seguridad', () => {
     });
 
     await page.screenshot({ path: evidencia('01-credenciales-por-defecto.png'), fullPage: true });
-  }, 45000);
+  });
 
   // ------------------------------------------------------------------ 02 ---
   test('02 - Inyeccion SQL en el login permite entrar sin contrasena', async ({ page }) => {
+    test.setTimeout(60000);
     await test.step('Abrir la pagina de login', async () => {
       await prepararPagina(page, '/#/login');
       paso('Pagina de login abierta');
@@ -180,10 +182,11 @@ test.describe('Juice Shop: errores tipicos de seguridad', () => {
     });
 
     await page.screenshot({ path: evidencia('02-sqli-login-admin.png'), fullPage: true });
-  }, 45000);
+  });
 
   // ------------------------------------------------------------------ 03 ---
   test('03 - Seccion de administracion accesible con la sesion robada', async ({ page }) => {
+    test.setTimeout(60000);
     await test.step('Entrar con la inyeccion SQL de la prueba 02', async () => {
       await iniciarSesion(page, "' OR 1=1--", 'contrasena-que-no-es');
       paso('Sesion iniciada como administrador (via SQL injection)');
@@ -195,16 +198,17 @@ test.describe('Juice Shop: errores tipicos de seguridad', () => {
       await page.goto(`${URL_JUICE}/#/administration`, { waitUntil: 'domcontentloaded' });
       await page.waitForTimeout(4000);
       const tabla = page.locator('mat-cell, td');
-      await expect(tabla.filter({ hasText: 'admin@juice-sh.op' }).first()).toBeVisible();
-      await expect(tabla.filter({ hasText: 'jim@juice-sh.op' }).first()).toBeVisible();
+      await expect(tabla.filter({ hasText: 'admin@juice-sh.op' }).first()).toBeVisible({ timeout: 10000 });
+      await expect(tabla.filter({ hasText: 'jim@juice-sh.op' }).first()).toBeVisible({ timeout: 10000 });
       paso('La tabla de usuarios aparece: escalada de privilegios lograda');
     });
 
     await page.screenshot({ path: evidencia('03-administracion-sqli.png'), fullPage: true });
-  }, 60000);
+  });
 
   // ------------------------------------------------------------------ 04 ---
   test('04 - Inyeccion SQL en el buscador filtra el error del servidor', async ({ page }) => {
+    test.setTimeout(60000);
     await test.step('Buscar un texto que rompe la consulta SQL', async () => {
       // Como haria una persona: escribir en el buscador y presionar Enter.
       // El  %  rompe la consulta LIKE del servidor.
@@ -230,10 +234,11 @@ test.describe('Juice Shop: errores tipicos de seguridad', () => {
     });
 
     await page.screenshot({ path: evidencia('04-sqli-buscador-stacktrace.png'), fullPage: true });
-  }, 45000);
+  });
 
   // ------------------------------------------------------------------ 05 ---
   test('05 - XSS en el buscador ejecuta JavaScript en el navegador', async ({ page }) => {
+    test.setTimeout(60000);
     const dialogos = [];
     // Antes de disparar el XSS hay que registrar el manejador de ventanas
     // emergentes (alert) para poder leer su contenido. La pausa de 1200 ms
@@ -262,7 +267,7 @@ test.describe('Juice Shop: errores tipicos de seguridad', () => {
     });
 
     await page.screenshot({ path: evidencia('05-xss-buscador.png'), fullPage: true });
-  }, 45000);
+  });
 
   // ------------------------------------------------------------------ 06 ---
   test('06 - Directorio /ftp/ expuesto con archivos internos', async ({ page }) => {
@@ -304,6 +309,7 @@ test.describe('Juice Shop: errores tipicos de seguridad', () => {
 
   // ------------------------------------------------------------------ 08 ---
   test('08 - Registro de usuario con email VACIO (validacion solo en el frontend)', async ({ page }) => {
+    test.setTimeout(60000);
     await test.step('Intentar registrarse con email en blanco en la pagina', async () => {
       await prepararPagina(page, '/#/register');
       // La interfaz SI valida: llena todo, pero con un email de solo espacios.
@@ -346,10 +352,11 @@ test.describe('Juice Shop: errores tipicos de seguridad', () => {
     });
 
     await page.screenshot({ path: evidencia('08-registro-email-vacio.png'), fullPage: true });
-  }, 45000);
+  });
 
   // ------------------------------------------------------------------ 09 ---
   test('09 - IDOR: leer el carrito de compras de OTRO usuario', async ({ page }) => {
+    test.setTimeout(60000);
     const email = `alumno-${Date.now()}@test.com`;
     const contrasena = 'Prueba#12345';
 
@@ -381,27 +388,28 @@ test.describe('Juice Shop: errores tipicos de seguridad', () => {
     });
 
     await page.screenshot({ path: evidencia('09-idor-carrito.png'), fullPage: true });
-  }, 60000);
+  });
 
   // ------------------------------------------------------------------ 10 ---
   test('10 - Panel de desafios oculto accesible por URL (/#/score-board)', async ({ page }) => {
+    test.setTimeout(60000);
     await test.step('Navegar a la URL "secreta" del panel de desafios', async () => {
       // No aparece en ningun menu: se confia en que "nadie la conoce".
       // Eso es security by obscurity: la seguridad NO debe depender de
       // que un atacante no adivine una URL.
       await prepararPagina(page, '/#/score-board');
       await page.waitForTimeout(2500);
-      await expect(page.getByText(/Challenges Solved/)).toBeVisible();
+      await expect(page.getByText(/Challenges Solved/)).toBeVisible({ timeout: 15000 });
       paso('El panel oculto cargo sin problemas');
     });
 
     await test.step('Ver el listado de los errores de seguridad', async () => {
       // El panel lista los desafios de hacking... incluidos los que
       // acabamos de demostrar en las pruebas 01 a 09.
-      await expect(page.getByText('Login Admin')).toBeVisible();
+      await expect(page.getByText('Login Admin')).toBeVisible({ timeout: 15000 });
       paso('El panel publica los desafios (ej: "Login Admin") = mapa del atacante');
     });
 
     await page.screenshot({ path: evidencia('10-score-board.png'), fullPage: true });
-  }, 45000);
+  });
 });
